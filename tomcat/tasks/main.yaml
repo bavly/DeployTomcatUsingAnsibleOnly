@@ -1,0 +1,6 @@
+---
+- name: Start tasks  
+- include_tasks: "tomcatSetup&Dependencies.yml"
+- include_tasks: "deployApplication&Healthcheck.yml"
+
+

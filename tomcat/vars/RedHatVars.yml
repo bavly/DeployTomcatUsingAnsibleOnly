@@ -1,0 +1,15 @@
+tomcat_version: 9.0.52
+tomcat_archive_url: https://archive.apache.org/dist/tomcat/tomcat-9/{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz
+tomcat_archive_dest: /opt/tomcat/apache-tomcat-{{ tomcat_version }}.tar.gz
+group_id: eg.com.service.application
+artifact_id: application_name
+sysv_start_after: sysv_start_after
+springboot_deploy_dir: /opt/tomcat/apache-tomcat-{{ tomcat_version }}
+springboot_group: tomcat
+springboot_user: application_nameused
+deployment_host: hostname_server
+startup_timeout: 60
+java_dir: /usr/java/jdk11
+nexus_url: http://my-nexus-server.com:8081/
+application_port_context : 8080
+ansible_user_id : ansible_user

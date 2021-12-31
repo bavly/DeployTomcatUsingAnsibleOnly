@@ -1,0 +1,77 @@
+  tasks:   
+    - name: "Pre Deployment Checks: Ensure Java binary is present"
+      file:
+        path: "{{ java_dir }}/bin/java"
+        state: file
+    
+    - name: "Pre Deployment Checks: Verify Java Version"
+      command: "{{ java_dir }}/bin/java -version"
+      register: java_version
+
+    - debug: msg="{{ java_version.stderr }}"
+      ignore_errors: True
+
+    - name: "Adding HelloWorld "
+      template:
+        src: helloWorld.j2
+        dest: /opt/tomcat/apache-tomcat-{{ tomcat_version }}/webapps/
+
+    - name: "Configure: Create systemd service file"
+      template:
+        src: app.service.j2
+        dest: "{{ sysd_script }}"
+        mode: 0644
+        owner: "{{ springboot_user }}"
+        group: "{{ springboot_group }}"
+      become: yes
+      when: ((ansible_distribution == "CentOS" or ansible_distribution == "RedHat")  and ansible_distribution_major_version > '6' and version != "" and config_version != "" )
+
+    - name: "Startup: Restart application - SystemD"
+      systemd:
+        name: "{{ artifactid }}"
+        enabled: yes
+        daemon-reload: yes
+        state: restarted
+      become: yes
+      when: ((ansible_distribution == "CentOS" or ansible_distribution == "RedHat") and ansible_distribution_major_version > '6')
+      
+    - name: "Health Check: Waiting for {{ artifactid }} to be ready"
+      wait_for:
+        port: "{{ application_port }}"
+        host: "{{ deployment_host }}"
+        connect_timeout: 3
+        delay: 3
+        timeout: "{{ startup_timeout }}"
+      check_mode: no
+    
+    - name: "Health Check: Querying {{ artifactid }} actuator health endpoint"
+      uri:
+        url: "http://{{ deployment_host }}:{{ application_port_context }}/helloWorld.j2"
+        method: GET
+        return_content: yes
+        status_code: 200
+        body_format: json
+      register: result
+      until: result.json.status == "UP"
+      failed_when: result.status not in [200]
+      retries: 5
+      delay: 3
+      check_mode: no
+
+
+# if you want to take a deployment from repository 
+
+    # - name: "Deployment: Retreive and Deploy Application Artifact - SystemD"
+    #   maven_artifact:
+    #     group_id: "{{ groupid }}"
+    #     artifact_id: "{{ artifactid }}"
+    #     version: "{{ version }}"
+    #     repository_url: "{{ nexus_url / jfrog_url }}/repository/maven-public/"
+    #     dest: "{{ springboot_deploy_folder }}"
+    #     extension: "jar"
+    #     state: "present"
+    #     timeout: 10
+    #     verify_checksum: always
+    #     validate_certs: no
+    #     mode: 0644
+    #     owner: "{{ ansible_user_id }}"

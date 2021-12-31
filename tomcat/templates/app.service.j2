@@ -1,0 +1,26 @@
+[Unit]
+Description={{ artifactid }}
+After={{ sysv_start_after }}
+
+[Service]
+WorkingDirectory={{ springboot_deploy_folder }}/
+User={{ springboot_user }}
+Group={{ springboot_group }}
+Type=forking
+
+
+Environment=JAVA_HOME={{ java_dir }}
+
+Environment=CATALINA_HOME=/usr/share/tomcat
+Environment=CATALINA_BASE=/usr/share/tomcat
+Environment=CATALINA_PID=/usr/share/tomcat/temp/tomcat.pid
+
+Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'
+
+ExecStart=/opt/tomcat/apache-tomcat-8.5.40/bin/startup.sh
+ExecStop=/opt/tomcat/apache-tomcat-8.5.40/bin/shutdown.sh
+
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
