@@ -1,4 +1,5 @@
-  tasks:   
+  tasks:
+     
     - name: "Pre Deployment Checks: Ensure Java binary is present"
       file:
         path: "{{ java_dir }}/bin/java"
