@@ -13,3 +13,4 @@ java_dir: /usr/java/jdk11
 nexus_url: http://my-nexus-server.com:8081/
 application_port_context : 8080
 ansible_user_id : ansible_user
+
